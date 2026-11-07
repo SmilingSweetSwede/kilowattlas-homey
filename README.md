@@ -6,6 +6,10 @@ energy. The Homey counterpart of the
 [Home Assistant integration](https://github.com/SmilingSweetSwede/kilowattlas-homeassistant):
 same server, same channels, same privacy rules.
 
+**Vill du koppla din Homey?** Följ [installationsguiden](docs/installera.md)
+(på svenska, cirka tio minuter). *Want to connect your Homey? Follow the
+[installation guide](docs/installera.md) (Swedish).*
+
 **Status: pre-release.** The app itself is not written yet. This repository
 holds what comes first:
 

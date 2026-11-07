@@ -39,23 +39,8 @@ Tjänsten är gratis och säljer inte data.
 ## Steg 1: koppla in Homey (cirka tio minuter)
 
 Det finns ingen app ännu, så vi använder Athoms egen app **HomeyScript**.
-Du behöver inte fylla i något i scriptet.
-
-1. Installera **HomeyScript** från Homey App Store om du inte har den.
-2. Öppna <https://my.homey.app/scripts/> i datorn, välj din Homey och skapa
-   ett nytt script som heter `kilowattlas`.
-3. Öppna [send.js](https://raw.githubusercontent.com/SmilingSweetSwede/kilowattlas-homey/main/homeyscript/send.js),
-   markera allt, kopiera och klistra in i scriptet. Spara.
-4. Klicka på **Kör**. Scriptet listar de enheter det hittat i Homey Energy,
-   till exempel sol, nät (P1), batteri och laddbox, med effekten just nu.
-   Stämmer listan? Om inte, sluta här och skicka utskriften till oss.
-5. Under listan står en länk och en kod. Öppna länken, logga in på
-   kilowattlas.com (eller skapa ett konto), kontrollera var anläggningen
-   ligger och fyll i solcellernas toppeffekt. Godkänn.
-6. Inom en minut skriver scriptet `Connected` och `sent …, accepted …`.
-   Hann det inte, klicka på **Kör** igen.
-7. Skapa ett Flow: *När* Datum & tid "Varje 1 minut" → *Då* HomeyScript
-   "Kör ett script" → `kilowattlas`. Utan Flowet skickas inget mer.
+Följ [installationsguiden](installera.md), steg för steg med bilder. Du
+behöver inte fylla i något i scriptet.
 
 Klart. Efter några minuter syns anläggningen under *Mina anläggningar* på
 kilowattlas.com. Där väljer du för varje kanal om den ska vara publik, bara
