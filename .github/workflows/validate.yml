@@ -1,0 +1,31 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  # Everything the Homey CLI packages is plain source kept here: no bundles,
+  # no frameworks, nothing built from another repository.
+  shipped-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check_shipped_source.py
+
+  # Athom's own validation of the simulator app's manifest and drivers.
+  # `--level publish` is what the App Store requires; the CLI needs Docker,
+  # which the GitHub runner has.
+  homey-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --global homey
+      - run: homey app validate --level publish
+        working-directory: sim

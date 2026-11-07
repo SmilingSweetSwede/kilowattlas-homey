@@ -1,0 +1,8 @@
+{
+  "name": "com.kilowattlas.sim",
+  "version": "0.1.0",
+  "description": "Simulated energy devices for testing the Kilowattlas Homey app",
+  "main": "app.js",
+  "private": true,
+  "license": "MIT"
+}

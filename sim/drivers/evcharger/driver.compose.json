@@ -1,0 +1,52 @@
+{
+  "name": {
+    "en": "Simulated EV charger"
+  },
+  "class": "evcharger",
+  "capabilities": [
+    "measure_power",
+    "meter_power",
+    "evcharger_charging",
+    "evcharger_charging_state"
+  ],
+  "energy": {
+    "evCharger": true,
+    "meterPowerImportedCapability": "meter_power"
+  },
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [],
+  "images": {
+    "small": "/drivers/evcharger/assets/images/small.png",
+    "large": "/drivers/evcharger/assets/images/large.png"
+  },
+  "settings": [
+    {
+      "id": "charge_kw",
+      "type": "number",
+      "label": {
+        "en": "Charging power (kW)"
+      },
+      "value": 11,
+      "min": 1,
+      "max": 350,
+      "units": {
+        "en": "kW"
+      }
+    }
+  ],
+  "pair": [
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ]
+}

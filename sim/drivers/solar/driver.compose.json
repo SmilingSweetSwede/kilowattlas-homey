@@ -1,0 +1,18 @@
+{
+  "name": { "en": "Simulated solar" },
+  "class": "solarpanel",
+  "capabilities": ["measure_power", "meter_power"],
+  "platforms": ["local"],
+  "connectivity": [],
+  "images": {
+    "small": "/drivers/solar/assets/images/small.png",
+    "large": "/drivers/solar/assets/images/large.png"
+  },
+  "settings": [
+    { "id": "peak_kw", "type": "number", "label": { "en": "Peak power (kW)" }, "value": 9.6, "min": 0.1, "max": 500, "units": { "en": "kW" } }
+  ],
+  "pair": [
+    { "id": "list_devices", "template": "list_devices", "navigation": { "next": "add_devices" } },
+    { "id": "add_devices", "template": "add_devices" }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": { "en": "Simulated three-phase meter (3EM)" },
+  "class": "sensor",
+  "capabilities": ["measure_power", "measure_power.l1", "measure_power.l2", "measure_power.l3", "meter_power"],
+  "capabilitiesOptions": {
+    "measure_power.l1": { "title": { "en": "Power L1" } },
+    "measure_power.l2": { "title": { "en": "Power L2" } },
+    "measure_power.l3": { "title": { "en": "Power L3" } }
+  },
+  "platforms": ["local"],
+  "connectivity": [],
+  "images": {
+    "small": "/drivers/threephase/assets/images/small.png",
+    "large": "/drivers/threephase/assets/images/large.png"
+  },
+  "settings": [
+    {
+      "id": "role",
+      "type": "dropdown",
+      "label": { "en": "What the meter sits on" },
+      "value": "grid",
+      "values": [
+        { "id": "grid", "label": { "en": "The incoming grid connection (same as the P1 meter)" } },
+        { "id": "evcharger", "label": { "en": "The EV charger's circuit" } },
+        { "id": "home", "label": { "en": "The home's load, EV excluded" } }
+      ]
+    }
+  ],
+  "pair": [
+    { "id": "list_devices", "template": "list_devices", "navigation": { "next": "add_devices" } },
+    { "id": "add_devices", "template": "add_devices" }
+  ]
+}

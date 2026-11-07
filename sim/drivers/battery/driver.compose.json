@@ -1,0 +1,28 @@
+{
+  "name": { "en": "Simulated home battery" },
+  "class": "battery",
+  "capabilities": ["measure_power", "measure_battery", "meter_power.charged", "meter_power.discharged"],
+  "capabilitiesOptions": {
+    "meter_power.charged": { "title": { "en": "Charged Energy" } },
+    "meter_power.discharged": { "title": { "en": "Discharged Energy" } }
+  },
+  "energy": {
+    "homeBattery": true,
+    "meterPowerImportedCapability": "meter_power.charged",
+    "meterPowerExportedCapability": "meter_power.discharged"
+  },
+  "platforms": ["local"],
+  "connectivity": [],
+  "images": {
+    "small": "/drivers/battery/assets/images/small.png",
+    "large": "/drivers/battery/assets/images/large.png"
+  },
+  "settings": [
+    { "id": "capacity_kwh", "type": "number", "label": { "en": "Capacity (kWh)" }, "value": 10, "min": 0.5, "max": 1000, "units": { "en": "kWh" } },
+    { "id": "max_kw", "type": "number", "label": { "en": "Max charge/discharge power (kW)" }, "value": 5, "min": 0.1, "max": 500, "units": { "en": "kW" } }
+  ],
+  "pair": [
+    { "id": "list_devices", "template": "list_devices", "navigation": { "next": "add_devices" } },
+    { "id": "add_devices", "template": "add_devices" }
+  ]
+}

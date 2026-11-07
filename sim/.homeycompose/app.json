@@ -1,0 +1,21 @@
+{
+  "id": "com.kilowattlas.sim",
+  "version": "0.1.0",
+  "compatibility": ">=12.4.5",
+  "sdk": 3,
+  "platforms": ["local"],
+  "brandColor": "#3a9d5d",
+  "name": { "en": "Kilowattlas Simulator" },
+  "description": {
+    "en": "Simulated solar, grid meter, home battery, EV charger and three-phase meter for testing Homey Energy integrations. Never for real homes."
+  },
+  "category": "energy",
+  "tags": { "en": ["kilowattlas", "simulator", "energy", "test"] },
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png"
+  },
+  "permissions": [],
+  "author": { "name": "Kilowattlas" },
+  "source": "https://github.com/SmilingSweetSwede/kilowattlas-homey"
+}
