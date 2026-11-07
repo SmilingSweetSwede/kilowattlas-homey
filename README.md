@@ -1,144 +1,106 @@
-# Kilowattlas för Homey
+# Kilowattlas · Homey app
 
-Dela det [Homey Energy](https://homey.app/sv-se/energy/) mäter med
-[Kilowattlas](https://kilowattlas.com), den öppna kartan över svensk
-hemenergi. Samma sak som [integrationen för Home Assistant](https://github.com/SmilingSweetSwede/kilowattlas-homeassistant):
-samma server, samma kanaler, samma regler för vad som visas.
+Share what [Homey Energy](https://homey.app/en-se/energy/) measures with
+[Kilowattlas](https://kilowattlas.com), the public live map of Swedish home
+energy. The Homey counterpart of the
+[Home Assistant integration](https://github.com/SmilingSweetSwede/kilowattlas-homeassistant):
+same server, same channels, same privacy rules.
 
-*English: a HomeyScript that shares Homey Energy readings with Kilowattlas.
-The steps below are in Swedish; developers start in
-[docs/development.md](docs/development.md).*
+**Vill du koppla din Homey?** Följ [installationsguiden](docs/installera.md)
+(på svenska, cirka tio minuter). *Want to connect your Homey? Follow the
+[installation guide](docs/installera.md) (Swedish).*
 
-Så här kopplar du din Homey Pro till [Kilowattlas](https://kilowattlas.com)
-med appen HomeyScript. Det tar cirka tio minuter. Du behöver inte skriva
-någon kod eller fylla i något i scriptet. Homeys webbsidor är på engelska,
-så knapparna heter som på bilderna.
+**Status: pre-release.** The app itself is not written yet. This repository
+holds what comes first:
 
-Du behöver:
+| Path | What |
+|---|---|
+| `homeyscript/probe.js` | Read-only HomeyScript that prints what Homey Energy knows about a home. Phase 1. |
+| `homeyscript/send.js` | HomeyScript that sends Homey Energy's readings to Kilowattlas before the app exists. Finds the devices itself, links with a device code and keeps its key in HomeyScript; nothing to fill in. Phase 1. |
+| `sim/` | A Homey app with simulated solar, grid (P1), home battery, EV charger and three-phase (3EM-like) devices, so the real app can be developed on a Homey without hardware. Never published. |
+| `docs/energy-mapping.md` | Homey Energy kinds → Kilowattlas kinds, keys and signs. The one place this is defined. |
+| `docs/tester-onboarding.md` | What the beta tester gets (Swedish). |
+| `scripts/check_shipped_source.py` | Everything that ships is plain source kept here. Runs in CI. |
 
-- en Homey Pro (2023 eller senare) eller Homey Pro mini, med dina
-  solceller, elmätare (P1), batteri eller laddbox i **Energi**-fliken,
-- en dator med webbläsare,
-- ett konto på kilowattlas.com (du kan skapa det under steg 5).
+## Development
 
-Kilowattlas läser bara. Det slår aldrig av eller på något hemma hos dig.
+Requirements: Node.js 24 or newer, Docker, the Homey CLI
+(`npm install --global homey`), an Athom account (`homey login`).
 
-## 1. Installera HomeyScript
+A Homey to run against: a Homey Pro, or
+[Homey Self-Hosted Server](https://homey.app/en-se/homey-self-hosted-server/)
+in Docker (30 days free, then a licence). The Kilowattlas dev stack starts one
+with `docker compose --profile homey up -d homey-shs`, with ports 4859–4862
+published. Open the firewall for them (`sudo ufw allow 4859:4862/tcp`), then
+activate it from the Homey phone app on the same Wi-Fi ("Add Homey →
+Self-Hosted Server", enter `http://<laptop-ip>:4859` by hand; a guest or
+office network with client isolation will not work), then:
 
-Öppna [HomeyScript i Homey App Store](https://homey.app/sv-se/app/com.athom.homeyscript/),
-välj din Homey och klicka på **Install App**. Har du den redan, gå vidare.
+```bash
+homey login
+homey list            # the Self-Hosted Server shows up like any Homey
+homey select          # pick it
 
-![HomeyScript i Homey App Store](docs/images/01-homeyscript-installera.png)
+cd sim
+homey app run         # the simulator; Ctrl+C removes it again
+# or: homey app install, to leave it running
+```
 
-## 2. Skapa ett nytt script
+Pair one device of each simulated driver (Devices → + → Kilowattlas
+Simulator). Homey Energy sorts them under solar, home battery, EV charger and
+the cumulative meter by itself; the three-phase meter is a plain sensor whose
+role (incoming line or a sub-circuit) is a device setting, for the
+double-counting cases in `docs/energy-mapping.md`. Every device follows one
+deterministic day (`sim/lib/profile.js`), so the grid meter always equals home
++ EV + battery charging − solar − battery discharging.
 
-Öppna <https://my.homey.app/scripts/> i datorn och logga in med ditt
-Homey-konto. Klicka på **+** för ett nytt script och döp det till
-`kilowattlas`. Det dyker upp i listan till vänster.
+Then run `homeyscript/probe.js` in HomeyScript against the simulated home and
+compare with a real one.
 
-![Nytt script på my.homey.app](docs/images/02-nytt-script.png)
+To send from the simulated home to the dev backend,
+`./scripts/make_send_local.sh [--fast]` writes `homeyscript/send.dev.local.js`
+(API base `http://backend:8050`). Paste it into a HomeyScript, run it, and
+approve the code it prints on the dev stack's `/link` page.
 
-## 3. Klistra in scriptet
+The real app (planned layout: `app.js`, `lib/mapping.js`, `lib/client.js`,
+`settings/`) will talk to the Kilowattlas API the way
+[aiokilowattlas](https://github.com/SmilingSweetSwede/aiokilowattlas) does:
+device-code linking, `POST /api/v1/contrib/solar`, `config.disabled_channels`.
+Its API base is a setting so it can point at a local backend.
 
-Öppna [homeyscript/send.js](homeyscript/send.js) här på GitHub och
-klicka på knappen **Copy raw file** uppe till höger i filvyn.
+## Rules for changes
 
-![Copy raw file på GitHub](docs/images/03-kopiera-fran-github.png)
+- Everything the Homey CLI packages is plain, readable JavaScript kept in
+  this repository: no bundles, no minified or generated files, nothing built
+  from another repository. `scripts/check_shipped_source.py` enforces this.
+- Homey Energy is the model of the home. The app reads what Homey Energy
+  already classifies; `docs/energy-mapping.md` is the one mapping.
+- Measurement only: nothing here ever switches or sets a device.
+- The owner decides per channel. A channel the server lists in
+  `config.disabled_channels` is not sent.
 
-Gå tillbaka till scriptet på my.homey.app, klistra in (Ctrl+V eller Cmd+V)
-och klicka på **Save**. I ett smalt fönster är det den blå knappen med en bock.
+## Before a release
 
-![Scriptet inklistrat och sparat](docs/images/04-klistra-in-och-spara.png)
+1. `python3 scripts/check_shipped_source.py`
+2. `node --test` and `homey app validate --level publish`
+3. Review the whole repository as an Athom reviewer would: every shipped file
+   readable source, no secrets, version bumped in `.homeycompose/app.json`.
+4. The Kilowattlas API accepts every kind the release declares; then publish.
 
-## 4. Kör scriptet och kontrollera listan
+## Privacy
 
-Klicka på **Test**, den vita knappen med en grön pil (▶). Under
-**Console** visas vilka enheter scriptet hittat i Homey Energy och vad de
-mäter just nu, och under dem en länk.
+Sent: the home's position once at linking, each reading of the shared
+channels with its timestamp, the battery capacity, and a revoke request when
+the app is disconnected. Shown publicly, at about 100 m, without name or
+account: production and battery. Only to the owner: grid, home and devices.
+Each channel can be set to public, only you, or off on kilowattlas.com. The
+service is free and does not sell data.
 
-![Utskriften efter första körningen](docs/images/05-forsta-korningen.png)
+## Limitations
 
-Stämmer listan med det du ser i Energi-fliken? Ett batteri som laddar visas
-med minustecken; det är rätt. Mätare som Homey Energy inte har sorterat in,
-till exempel en Shelly 3EM, står under **Not sent**. De skickas inte.
+Measurements only: no control of any device and no market bidding. Prices are
+added server-side; nothing is read from Homey's dynamic electricity prices.
 
-Ser listan fel ut, sluta här och skicka utskriften till oss.
+## Licence
 
-## 5. Godkänn på kilowattlas.com
-
-Under listan står en länk. Öppna den och logga in på kilowattlas.com (eller
-skapa ett konto). Sidan är på engelska. Fyll i:
-
-- **Name:** ett namn på anläggningen, till exempel "Solceller på taket".
-- **Adress:** sök upp din adress eller klicka på kartan.
-- **Peak power (kW):** solcellernas toppeffekt, står på växelriktaren eller
-  i offerten.
-- Kryssa i rutan som säger att du godkänner att mätvärdena lagras.
-
-Klicka på **Approve link**.
-
-![Godkänn kopplingen på kilowattlas.com](docs/images/06-godkann.png)
-
-## 6. Kontrollera att det fungerar
-
-Tillbaka på my.homey.app: inom en minut skriver scriptet `Connected` och
-sedan `sent 5, accepted 5, rejected 0` (antalet beror på dina enheter).
-Står det `Not approved yet`, klicka på **Test** igen.
-
-## 7. Skapa ett Flow som kör scriptet varje minut
-
-Utan ett Flow skickas bara ett värde, när du själv klickar på Test.
-
-På my.homey.app eller i Homey-appen: **Flows → +**, sedan:
-
-- **When:** *Date & Time* → **Every 1 Minutes** (välj 1 och minuter)
-- **Then:** *HomeyScript* → **Run** → `kilowattlas`
-
-Lägg inga kort under **And**. Välj inte sekunder: varje körning tar en
-stund, och Homey stänger av ett Flow som startar oftare än det hinner köras.
-
-Klicka på **Save** och se till att Flowet är påslaget.
-
-![Flowet: varje minut, kör kilowattlas](docs/images/07-flow.png)
-
-## 8. Välj vem som ser vad
-
-Efter några minuter syns anläggningen under **Mina anläggningar** på
-kilowattlas.com. Där väljer du för varje kanal om den ska synas för alla,
-bara för dig, eller vara avstängd. Scriptet följer ditt val. Klicka på
-**Ändra vem som ser vad**.
-
-![Mina anläggningar på kilowattlas.com](docs/images/08-mina-anlaggningar.png)
-
-Som standard syns solproduktion och batteri för alla, på cirka 100 meters
-noggrannhet och utan namn. Elnät och laddbox ser bara du.
-
-## Sluta
-
-1. Öppna scriptet, ändra `const UNLINK = false;` till `const UNLINK = true;`,
-   klicka på **Save** och sedan **Test**. Kopplingen till Kilowattlas tas bort.
-2. Radera Flowet och scriptet.
-3. Vill du också radera historiken: ta bort anläggningen under
-   **Mina anläggningar** på kilowattlas.com.
-
-## Vanliga frågor
-
-**Vad skickas?** En tidsstämpel och ett värde i kW (batteriets laddnivå i
-procent) för varje kanal i listan från steg 4. Inga enhetsnamn, inga Flows,
-inga andra enheter.
-
-**Var finns nyckeln?** Scriptet sparar den i HomeyScript på din Homey. Den
-visas aldrig och du behöver aldrig kopiera den.
-
-**Det står `rejected` i utskriften.** Skicka utskriften till oss; den säger
-vilken kanal och varför.
-
-## För utvecklare
-
-Hur repot är uppbyggt, simulatorn, reglerna för ändringar och checklistan
-före en release: [docs/development.md](docs/development.md). Hur Homey
-Energys enheter blir Kilowattlas-kanaler: [docs/energy-mapping.md](docs/energy-mapping.md).
-
-## Licens
-
-MIT. Inte knutet till Athom B.V.; Homey är deras varumärke.
+MIT. Not affiliated with Athom B.V.; Homey is their trademark.
