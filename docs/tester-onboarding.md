@@ -39,7 +39,7 @@ Tjänsten är gratis och säljer inte data.
 ## Steg 1: koppla in Homey (cirka tio minuter)
 
 Det finns ingen app ännu, så vi använder Athoms egen app **HomeyScript**.
-Följ [installationsguiden](installera.md), steg för steg med bilder. Du
+Följ [installationsguiden](../README.md), steg för steg med bilder. Du
 behöver inte fylla i något i scriptet.
 
 Klart. Efter några minuter syns anläggningen under *Mina anläggningar* på
