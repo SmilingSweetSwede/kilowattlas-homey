@@ -111,7 +111,16 @@ async function link() {
     save();
   }
   log(`\nTo connect this Homey, open ${state.url} and approve.`);
+  // A run by hand and a Flow run can wait here at the same time. The server
+  // hands the key out once, so only one of them gets it; the other must pick
+  // it up from the store instead of overwriting it with its own older copy.
+  const keyFromOtherRun = () => {
+    const now = global.get(STORE) || {};
+    if (now.token) Object.assign(state, now);
+    return Boolean(now.token);
+  };
   for (let i = 0; i < 9; i++) { // wait up to 45 s here
+    if (keyFromOtherRun()) return true;
     const r = await post('/api/v1/contrib/device/token', { device_code: state.code });
     if (r.status === 200) {
       Object.assign(state, { token: r.data.token, code: null, disabled: (r.data.config || {}).disabled_channels || [] });
@@ -119,6 +128,7 @@ async function link() {
       return log(`Connected: installation ${r.data.site_id}.`) || true;
     }
     if (r.data.error !== 'authorization_pending') {
+      if (keyFromOtherRun()) return true; // the other run won the race
       state.code = null; save(); // expired or used: the next run gets a new code
       throw new Error(`linking failed: ${r.data.error || r.status}. Run again.`);
     }
